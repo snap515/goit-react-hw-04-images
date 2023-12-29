@@ -1,4 +1,4 @@
-import { Component } from "react";
+import { useEffect, useState } from "react";
 import { Searchbar } from "./Searchbar/Searchbar";
 import { ImageGallery } from "./ImageGallery/ImageGallery";
 import { Button } from "./Button/Button";
@@ -6,71 +6,64 @@ import { fetchImages } from "services/photoService";
 import { STATUSES } from "utils/constants";
 import { Loader } from "./Loader/Loader";
 
-export class App extends Component{
-  state = {
-    searchText: '',
-    data: null,
-    status: STATUSES.idle,
-    error: null,
-    page: 1,
-    isModalOpen: false,
-    loadMore: false
-  }
+export const App = () => {
 
-  onSubmit = e => {
+  const [searchText, setSearchText] = useState('');
+  const [data, setData] = useState(null);
+  const [status, setStatus] = useState(STATUSES.idle);
+  const [error, setError] = useState(null);
+  const [page, setPage] = useState(1);
+  const [loadMore, setLoadMore] = useState(false);
+  const [hasMounted, setHasMounted] = useState(false);
+
+  const onSubmit = e => {
     e.preventDefault();
-    const searchText = e.currentTarget.elements.searchText.value;
+    const newSearchText = e.currentTarget.elements.searchText.value;
 
-    if (this.state.searchText !== searchText) {
-      this.setState({
-        searchText: searchText,
-        data: null,
-        page: 1,
-      })
+    if (searchText !== newSearchText) {
+      setSearchText(newSearchText);
+      setData(null);
+      setPage(1);
+      setHasMounted(true)
     }
   }
 
-  getImages = async (searchText, page) => {
+  const getImages = async (searchText, page) => {
     try {
-      this.setState({ status: STATUSES.pending });
+      setStatus(STATUSES.pending)
       const data = await fetchImages(searchText, page);
-      this.setState({ status: STATUSES.success, loadMore: this.state.page < Math.ceil(data.totalHits / 12 )})
+      setStatus(STATUSES.success);
+      const showLoader = page < Math.ceil(data.totalHits/12)
+      setLoadMore(showLoader)
       return data;
     }
     catch (error){
-      this.setState({
-        error: error.message,
-        status:STATUSES.error
-      })
+      setError(error.message);
+      setStatus(STATUSES.error);
     }
   }
 
-  onLoadMore = () => {
-    const nextPage = this.state.page + 1;
-    this.setState({ page: nextPage })
+  const onLoadMore = () => {
+    setPage((prevPage) => prevPage + 1)
   }
 
-  componentDidUpdate = (prevProps, prevState) => {
-    if (this.state.page !== prevState.page ||
-      this.state.searchText !== prevState.searchText) {
-        this.getImages(this.state.searchText, this.state.page).then(fetchData => {
-          this.setState(prevState =>
-          (
-            prevState.data ? {
-            data: [...prevState.data, ...fetchData.hits],
-            } : { data: fetchData.hits }))
-        })
+  useEffect(() => {
+    if (hasMounted) {
+      getImages(searchText, page).then(fetchData => {
+      setData(prevData => prevData ? [...prevData, ...fetchData.hits] : fetchData.hits )
+    })
     }
-  }
+  }, [page, searchText, hasMounted])
 
-  render() {
     return (
       <div>
-        <Searchbar onSubmit={this.onSubmit}/>
-        <ImageGallery data={this.state.data}></ImageGallery>
-        {this.state.data && this.state.loadMore && <Button onLoadMore={this.onLoadMore}></Button>}
-        {this.state.status === STATUSES.pending && <Loader></Loader>}
+        <Searchbar onSubmit={onSubmit}/>
+        <ImageGallery data={data}></ImageGallery>
+        {data && loadMore && <Button onLoadMore={onLoadMore}></Button>}
+        {status === STATUSES.pending && <Loader></Loader>}
       </div>
     );
-  }
 };
+
+//1) Обратите внимание, пожалуйста на hasMounted. Верно ли так бороться с двойным рендером? Или есть другие способы? Если не трудно - расскажите о них ))
+//2) в useEffect prevData, нужно ли через prevData или можно просто обращаться к data из state ?

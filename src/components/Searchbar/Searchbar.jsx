@@ -1,6 +1,6 @@
 import css from './Searchbar.module.css'
 
-export const Searchbar = ({ onSubmit, onInput }) => {
+export const Searchbar = ({ onSubmit }) => {
   return (
     <header className={css.Searchbar}>
       <form className={css.SearchForm} onSubmit={onSubmit}>

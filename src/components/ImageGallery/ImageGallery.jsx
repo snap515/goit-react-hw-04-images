@@ -1,36 +1,31 @@
 import { ImageGalleryItem } from "components/ImageGalleryItem/ImageGalleryItem"
 import css from "./ImageGallery.module.css"
 import { Modal } from "components/Modal/Modal"
-import { Component } from "react"
+import { useState } from "react"
 
-export class ImageGallery extends Component {
-  state = {
-    isModalOpen: false,
-    modalData: null,
-  }
+export const ImageGallery =({data}) => {
 
-  handleModal = (idToFind) => {
-    const data  = this.props.data;
+  const [isModalOpen, setIsModalOpen] = useState(false);
+  const [modalData, setModalData] = useState(null);
+
+  const handleModal = (idToFind) => {
     const modalData = data.find(img => img.id === idToFind)
-    this.setState({ isModalOpen: true, modalData: modalData.largeImageURL})
+    setIsModalOpen(true);
+    setModalData(modalData.largeImageURL)
   }
 
-  closeModal = () => {
-    this.setState({isModalOpen: false})
+  const closeModal = () => {
+    setIsModalOpen(false)
   }
 
-  render() {
-    const data  = this.props.data;
     return (
     <ul className={css.ImageGallery}>
         {data?.map(dataElem => {
         return (
-          <ImageGalleryItem key={dataElem.id} id={dataElem.id} webImg={dataElem.webformatURL} handleModal={this.handleModal}></ImageGalleryItem>
+          <ImageGalleryItem key={dataElem.id} id={dataElem.id} webImg={dataElem.webformatURL} handleModal={handleModal}></ImageGalleryItem>
         )
         })}
-      {this.state.isModalOpen && (<Modal modalData={this.state.modalData} closeModal={this.closeModal}></Modal>)}
+      {isModalOpen && (<Modal modalData={modalData} closeModal={closeModal}></Modal>)}
     </ul>
   )
-  }
-  
 }
