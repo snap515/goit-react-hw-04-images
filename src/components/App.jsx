@@ -57,6 +57,7 @@ export const App = () => {
 
     return (
       <div>
+        {error && <p>{ error}</p>}
         <Searchbar onSubmit={onSubmit}/>
         <ImageGallery data={data}></ImageGallery>
         {data && loadMore && <Button onLoadMore={onLoadMore}></Button>}
