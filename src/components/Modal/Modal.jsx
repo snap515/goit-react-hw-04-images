@@ -23,7 +23,7 @@ export const Modal = (props) => {
       document.documentElement.style.overflow = 'auto';
       window.removeEventListener('keydown', handleModalOnEscClose)
     }
-  }, [])
+  }, [handleModalOnEscClose])
   
   return (
     <div className={css.Overlay} onClick={handleCloseModal}>
