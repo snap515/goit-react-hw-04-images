@@ -18,14 +18,16 @@ export const App = () => {
 
   const onSubmit = e => {
     e.preventDefault();
-    const newSearchText = e.currentTarget.elements.searchText.value;
+    const newSearchText = e.currentTarget.elements.searchText.value.trim();
+    
+    if (!newSearchText) {
+      return;
+    }
 
-    if (searchText !== newSearchText) {
       setSearchText(newSearchText);
       setData(null);
       setPage(1);
       setHasMounted(true)
-    }
   }
 
   const getImages = async (searchText, page) => {
